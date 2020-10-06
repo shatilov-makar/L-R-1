@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConsoleApp2
 {
@@ -22,44 +19,45 @@ namespace ConsoleApp2
                 : new Func<double, double>((x) => coefficient[0] * Math.Pow(x, 3) + coefficient[1] * x + coefficient[2]);
             var res1 = HalveMethod(f, edges[0], edges[1]);
             var res2 = NewtonMethod(f, edges[0], edges[1]);
-            Console.WriteLine("Результат, полученный методом деления отрезка: " + res1);
-            Console.WriteLine("Результат, полученный методом Ньютона: " + res2);
+            var r1 = double.IsNaN(res1) ? "В заданном диапозоне корней нет" : "Результат, полученный методом деления отрезка: " + res1;
+            Console.WriteLine(r1);
+            var r2 = double.IsNaN(res2) ? "В заданном диапозоне корней нет" : "Результат, полученный методом Ньютона: " + res2;
+            Console.WriteLine(r2);
             Console.ReadKey();
         }
 
-     
-
-        static double HalveMethod(Func<double, double> f, double i1, double i2)
+        static double HalveMethod(Func<double, double> f, double e1, double e2)
         {
-            double x0;
-            do
+            double x;
+            var y = double.MaxValue;
+            while(true)
             {
-                x0 = (i1 + i2) / 2;
-                var halfEdge = GetHalveEdge(f, i1, i2, x0);
+                x = (e1 + e2) / 2;
+                y = Math.Abs(f(x));
+                if (Math.Abs(e2 - e1) < eps) 
+                    return x;
+                var halfEdge = GetHalveEdge(f, e1, e2, x);
                 if (halfEdge == null)
-                    throw new Exception("В заданном диапозоне корней нет");
-                i1 = halfEdge[0];
-                i2 = halfEdge[1];
+                    return double.NaN;
+                e1 = halfEdge[0];
+                e2 = halfEdge[1];
             }
-            while (Math.Abs(i1 - i2) > eps);
-            return Math.Round(x0, 2);
         }
 
         static double[] GetHalveEdge(Func<double, double> f, double i1, double i2, double x0)
         {
             var d1 = f(i1);
             var d2 = f(x0);
-            if (d1 * d2 <= 0)
+            if (d1 * d2 < 0)
                 return new double[2] { i1, x0 };
             d1 = d2;
             d2 = f(i2);
-            if (d1 * d2 <= 0)
+            if (d1 * d2 < 0)
                 return new double[2] { x0, i2 };
             return null;
         }
        
- 
-       static double NewtonMethod(Func<double, double> f, double i1, double i2)
+       static double NewtonMethod(Func<double, double> f, double e1, double e2)
        {
             double x0;
             Func<double, double> secondDir; 
@@ -67,15 +65,16 @@ namespace ConsoleApp2
                  secondDir = new Func<double, double>((x)=> -coefficient[0]*Math.Sin(x) + coefficient[1]);
             else 
                 secondDir = new Func<double, double>((x) => 3 * coefficient[0] * Math.Pow(x, 2) + coefficient[1]);
-            if (f(i1) * secondDir(i1) > 0)
-                x0 = i1;
-            if (f(i2) * secondDir(i2) > 0)
-                x0 = i2;
-            else throw new Exception("В заданном диапозоне корней нет");
+            if (f(e1) * secondDir(e1) > 0)
+                x0 = e1;
+            if (f(e2) * secondDir(e2) > 0)
+                x0 = e2;
+            else
+                return double.NaN;
             while (Math.Abs(f(x0)) >= eps)
             {
                 var d = (f(x0 + dx) - f(x0)) / dx;
-                x0 = Math.Round(x0 - (f(x0) / d), 2);
+                x0 = x0 - (f(x0) / d);
             }
             return x0;
         }
@@ -91,9 +90,9 @@ namespace ConsoleApp2
                     bool flag = false;
                     while (true)
                     {
-                        Console.WriteLine("Введите диапозон нахождения корня. Ширина диапозона должна быть не менее 0.01");
+                        Console.WriteLine("Введите диапозон нахождения корня");
                         edges = GetUserInput();
-                        if (edges.Length == 2 && Math.Round(Math.Abs(edges[0] - edges[1]), 3) >= eps)
+                        if (edges.Length == 2)
                         {
                             flag = true;
                             break;
@@ -138,6 +137,5 @@ namespace ConsoleApp2
             Console.WriteLine("Ошибка! Следуйте командам");
             Console.WriteLine();
         }
-
     }
 }
