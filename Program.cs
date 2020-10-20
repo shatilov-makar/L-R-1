@@ -10,15 +10,18 @@ namespace ConsoleApp2
         static void Main(string[] args)
         {
             var matrix = ChooseParameters();
-            if (matrix == null)
+            var g =  (double[,]) matrix.Clone();
+            if (!IsLinearIndependence(matrix))
             {
                 Console.WriteLine("Система имеет множество решений");
                 Console.ReadKey();
                 return;
             }
+            Console.WriteLine("Метод Гаусса...");
             ShowMatrix(GetSimplifyMatrix(matrix));
             ShowRoots(GetSolve(matrix));
-            
+            Console.WriteLine("Метод прогонки...");
+            new TridiagonalMatrixAlgorithm(g);
             Console.ReadKey();
         }
 
@@ -98,9 +101,7 @@ namespace ConsoleApp2
                 }
 
             }
-            if (IsLinearIndependence(parameters))
-                return parameters;
-            return null;
+            return parameters;
         }
 
 
@@ -117,7 +118,7 @@ namespace ConsoleApp2
             Console.WriteLine();
         }
 
-        static void ShowMatrix(double[,] matrix)
+        public static void ShowMatrix(double[,] matrix)
         {
             Console.WriteLine();
             for (var i = 0; i < matrix.GetLength(0); i++)
@@ -139,12 +140,11 @@ namespace ConsoleApp2
         }
 
 
-        static void ShowRoots(double[] roots)
+        public static void ShowRoots(double[] roots)
         {
             for (var i = 0; i < roots.Length; i++)
-            {
-                Console.WriteLine($"x{i} =  {roots[i]}");
-            }
+                Console.WriteLine($"x{i + 1} =  {roots[i]}");
+            Console.WriteLine();
         }
 
         static bool IsLinearIndependence(double[,] matrix)
